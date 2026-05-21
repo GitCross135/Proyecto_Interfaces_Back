@@ -33,3 +33,13 @@ CREATE TABLE IF NOT EXISTS tickets (
     used_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS resales (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID REFERENCES tickets(id) ON DELETE CASCADE,
+    seller_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    event_id VARCHAR(10) REFERENCES events(code) ON DELETE CASCADE,
+    price INTEGER NOT NULL,
+    status VARCHAR(20) DEFAULT 'available',
+    created_at TIMESTAMP DEFAULT NOW()
+);

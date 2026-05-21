@@ -1,12 +1,41 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
-import pool from '../db';
+import pool from '../db/index.js';
 
 const router = Router();
 
 // In-memory store for now — swap for a real DB later
 const tickets = [];
+
+router.get('/my/:userId', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT 
+                t.id,
+                t.token,
+                t.status,
+                t.qr_code_data_url  AS "qrCodeDataUrl",
+                t.created_at,
+                e.code        AS event_id,
+                e.title       AS event_title,
+                e.date        AS event_date,
+                e.time        AS event_time,
+                e.venue       AS event_venue,
+                e.address     AS event_address,
+                e.price       AS event_price
+             FROM tickets t
+             JOIN events e ON t.event_id = e.code
+             WHERE t.user_id = $1
+             ORDER BY t.created_at DESC`,
+            [req.params.userId]
+        );
+        res.json({ tickets: result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener tickets' });
+    }
+});
 
 router.post('/purchase', async (req, res) => {
     const { userId, eventId } = req.body;
@@ -21,7 +50,13 @@ router.post('/purchase', async (req, res) => {
         );
 
         const ticket = result.rows[0];
-        const qrCodeDataUrl = await QRCode.toDataURL(ticket.token, { width: 300, margin: 2 });
+        const qrCodeDataUrl = await QRCode.toDataURL(ticket.token.toString(), { width: 300, margin: 2 });
+        
+        await pool.query(
+            `UPDATE tickets SET qr_code_data_url = $1 WHERE id = $2`,
+            [qrCodeDataUrl, ticket.id]
+        );
+
         created.push({ ...ticket, qrCodeDataUrl });
 
         await pool.query(
