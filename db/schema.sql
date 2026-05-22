@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     token UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    event_id VARCHAR(10) REFERENCES events(code) ON DELETE CASCADE,
+    event_id VARCHAR(10) REFERENCES events(code) ON DELETE SET NULL,
     status VARCHAR(20) DEFAULT 'active',
     used_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW()
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS resales (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ticket_id UUID REFERENCES tickets(id) ON DELETE CASCADE,
     seller_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    event_id VARCHAR(10) REFERENCES events(code) ON DELETE CASCADE,
+    event_id VARCHAR(10) REFERENCES events(code) ON DELETE SET NULL,
     price INTEGER NOT NULL,
     status VARCHAR(20) DEFAULT 'available',
     created_at TIMESTAMP DEFAULT NOW()

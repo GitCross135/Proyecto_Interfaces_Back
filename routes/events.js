@@ -52,4 +52,47 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Edit event
+router.put('/:code', async (req, res) => {
+    const { title, description, date, time, venue, address, price, totalCapacity } = req.body;
+    try {
+        const result = await pool.query(
+            `UPDATE events
+             SET title = $1, description = $2, date = $3, time = $4,
+                 venue = $5, address = $6, price = $7, total_capacity = $8
+             WHERE code = $9
+             RETURNING *`,
+            [title, description, date, time, venue, address, price, totalCapacity, req.params.code]
+        );
+        if (result.rows.length === 0)
+            return res.status(404).json({ error: 'Evento no encontrado.' });
+
+        res.json({ event: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al editar evento' });
+    }
+});
+
+// Delete event — cancels tickets first, then deletes the event
+router.delete('/:code', async (req, res) => {
+    try {
+        // Mark all tickets for this event as cancelled before deleting
+        await pool.query(
+            `UPDATE tickets SET status = 'cancelled' WHERE event_id = $1`,
+            [req.params.code]
+        );
+
+        await pool.query(
+            `DELETE FROM events WHERE code = $1`,
+            [req.params.code]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al eliminar evento' });
+    }
+});
+
 export default router;

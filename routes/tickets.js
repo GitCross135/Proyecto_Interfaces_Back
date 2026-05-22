@@ -15,17 +15,17 @@ router.get('/my/:userId', async (req, res) => {
                 t.id,
                 t.token,
                 t.status,
-                t.qr_code_data_url  AS "qrCodeDataUrl",
+                t.qr_code_data_url          AS "qrCodeDataUrl",
                 t.created_at,
-                e.code        AS event_id,
-                e.title       AS event_title,
-                e.date        AS event_date,
-                e.time        AS event_time,
-                e.venue       AS event_venue,
-                e.address     AS event_address,
-                e.price       AS event_price
+                t.event_id,
+                COALESCE(e.title, t.event_title)   AS event_title,
+                COALESCE(e.date,  t.event_date)    AS event_date,
+                COALESCE(e.venue, t.event_venue)   AS event_venue,
+                e.time                             AS event_time,
+                e.price                            AS event_price,
+                e.address                          AS event_address
              FROM tickets t
-             JOIN events e ON t.event_id = e.code
+             LEFT JOIN events e ON t.event_id = e.code
              WHERE t.user_id = $1
              ORDER BY t.created_at DESC`,
             [req.params.userId]
