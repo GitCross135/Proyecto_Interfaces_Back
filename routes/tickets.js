@@ -11,26 +11,33 @@ const tickets = [];
 router.get('/my/:userId', async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT 
+            `SELECT
                 t.id,
                 t.token,
                 t.status,
-                t.qr_code_data_url          AS "qrCodeDataUrl",
                 t.created_at,
                 t.event_id,
-                COALESCE(e.title, t.event_title)   AS event_title,
-                COALESCE(e.date,  t.event_date)    AS event_date,
-                COALESCE(e.venue, t.event_venue)   AS event_venue,
-                e.time                             AS event_time,
-                e.price                            AS event_price,
-                e.address                          AS event_address
+                e.title   AS event_title,
+                e.date    AS event_date,
+                e.venue   AS event_venue,
+                e.time    AS event_time,
+                e.price   AS event_price,
+                e.address AS event_address
              FROM tickets t
              LEFT JOIN events e ON t.event_id = e.code
              WHERE t.user_id = $1
              ORDER BY t.created_at DESC`,
             [req.params.userId]
         );
-        res.json({ tickets: result.rows });
+
+        const ticketsWithQr = await Promise.all(
+            result.rows.map(async (ticket) => {
+                const qrCodeDataUrl = await QRCode.toDataURL(ticket.token.toString(), { width: 300, margin: 2 });
+                return { ...ticket, qrCodeDataUrl };
+            })
+        );
+
+        res.json({ tickets: ticketsWithQr });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener tickets' });
@@ -51,11 +58,6 @@ router.post('/purchase', async (req, res) => {
 
         const ticket = result.rows[0];
         const qrCodeDataUrl = await QRCode.toDataURL(ticket.token.toString(), { width: 300, margin: 2 });
-        
-        await pool.query(
-            `UPDATE tickets SET qr_code_data_url = $1 WHERE id = $2`,
-            [qrCodeDataUrl, ticket.id]
-        );
 
         created.push({ ...ticket, qrCodeDataUrl });
 
