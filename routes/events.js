@@ -37,13 +37,13 @@ router.get('/my/:userId', async (req, res) => {
 
 // Create event
 router.post('/', async (req, res) => {
-    const { code, title, description, date, time, venue, address, price, priceLabel, totalCapacity, organizerId } = req.body;
+    const { code, title, description, date, rawDate, time, venue, address, price, priceLabel, totalCapacity, organizerId } = req.body;
     try {
         const result = await pool.query(
-            `INSERT INTO events (code, title, description, date, time, venue, address, price, price_label, total_capacity, organizer_id)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+            `INSERT INTO events (code, title, description, date, raw_date, time, venue, address, price, price_label, total_capacity, organizer_id)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
              RETURNING *`,
-            [code, title, description, date, time, venue, address, price, priceLabel, totalCapacity, organizerId]
+            [code, title, description, date, rawDate, time, venue, address, price, priceLabel, totalCapacity, organizerId]
         );
         res.json({ event: result.rows[0] });
     } catch (err) {

@@ -102,4 +102,27 @@ router.post('/validate', async (req, res) => {
     }
 });
 
+// Get all ticket holders for a specific event
+router.get('/event/:eventId', async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT 
+                t.id,
+                t.status,
+                t.created_at,
+                u.name      AS buyer_name,
+                u.email     AS buyer_email
+             FROM tickets t
+             JOIN users u ON t.user_id = u.id
+             WHERE t.event_id = $1
+             ORDER BY t.created_at ASC`,
+            [req.params.eventId]
+        );
+        res.json({ attendees: result.rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener asistentes' });
+    }
+});
+
 export default router;

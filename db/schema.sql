@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS events (
     title VARCHAR(150) NOT NULL,
     description TEXT,
     date VARCHAR(100),
+    raw_date TIMESTAMP,
     time VARCHAR(20),
     venue VARCHAR(150),
     address VARCHAR(255),
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS events (
     price_label VARCHAR(10) DEFAULT 'paid',
     total_capacity INTEGER NOT NULL,
     sold_tickets INTEGER DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'active',
     organizer_id UUID REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -31,6 +33,10 @@ CREATE TABLE IF NOT EXISTS tickets (
     event_id VARCHAR(10) REFERENCES events(code) ON DELETE SET NULL,
     status VARCHAR(20) DEFAULT 'active',
     used_at TIMESTAMP,
+    qr_code_data_url TEXT,
+    event_title TEXT,
+    event_date TEXT,
+    event_venue TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
 

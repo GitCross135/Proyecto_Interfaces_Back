@@ -4,6 +4,7 @@ import ticketRoutes from './routes/tickets.js';
 import userRoutes from './routes/users.js';
 import eventRoutes from './routes/events.js';
 import resaleRoutes from './routes/resales.js';
+import { startFinishEventsJob } from './jobs/finishEvents.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,3 +22,4 @@ app.use('/api/resales', resaleRoutes);
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+startFinishEventsJob();
