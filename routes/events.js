@@ -7,7 +7,9 @@ const router = Router();
 router.get('/:code', async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT e.*, u.name as organizer_name, u.member_since as organizer_since
+            `SELECT e.*, u.name as organizer_name,
+                u.member_since as organizer_since,
+                u.avatar_url as organizer_avatar
              FROM events e
              JOIN users u ON e.organizer_id = u.id
              WHERE e.code = $1`,

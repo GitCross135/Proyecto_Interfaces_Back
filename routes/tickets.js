@@ -22,7 +22,9 @@ router.get('/my/:userId', async (req, res) => {
                 e.venue   AS event_venue,
                 e.time    AS event_time,
                 e.price   AS event_price,
-                e.address AS event_address
+                e.address AS event_address,
+                e.image_url AS event_image_url
+                
              FROM tickets t
              LEFT JOIN events e ON t.event_id = e.code
              WHERE t.user_id = $1
