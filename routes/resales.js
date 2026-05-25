@@ -14,7 +14,8 @@ router.get('/event/:eventId', async (req, res) => {
                 r.created_at,
                 r.ticket_id,
                 u.name      AS seller_name,
-                u.id        AS seller_id
+                u.id        AS seller_id,
+                u.avatar_url AS seller_avatar_url
              FROM resales r
              JOIN users u ON r.seller_id = u.id
              WHERE r.event_id = $1 AND r.status = 'available'

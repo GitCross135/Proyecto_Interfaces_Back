@@ -115,7 +115,8 @@ router.get('/event/:eventId', async (req, res) => {
                 t.status,
                 t.created_at,
                 u.name      AS buyer_name,
-                u.email     AS buyer_email
+                u.email     AS buyer_email,
+                u.avatar_url AS buyer_avatar_url
              FROM tickets t
              JOIN users u ON t.user_id = u.id
              WHERE t.event_id = $1
