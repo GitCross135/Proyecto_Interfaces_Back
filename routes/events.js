@@ -7,7 +7,8 @@ const router = Router();
 router.get('/:code', async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT e.*, u.name as organizer_name,
+            `SELECT e.*, u.id as organizer_id,
+                u.name as organizer_name,
                 u.member_since as organizer_since,
                 u.avatar_url as organizer_avatar
              FROM events e
@@ -30,6 +31,18 @@ router.get('/my/:userId', async (req, res) => {
         const result = await pool.query(
             'SELECT * FROM events WHERE organizer_id = $1 ORDER BY created_at DESC',
             [req.params.userId]
+        );
+        res.json({ events: result.rows });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al obtener eventos' });
+    }
+});
+
+// Get all events
+router.get('/', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM events ORDER BY created_at DESC'
         );
         res.json({ events: result.rows });
     } catch (err) {
