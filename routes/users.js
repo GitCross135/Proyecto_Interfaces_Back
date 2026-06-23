@@ -12,9 +12,9 @@ router.post('/signup', async (req, res) => {
             return res.status(400).json({ error: 'Ya existe una cuenta con ese correo.' });
 
         const result = await pool.query(
-            `INSERT INTO users (first_name, last_name, name, email, password, member_since)
-             VALUES ($1, $2, $3, $4, $5, to_char(NOW(), 'Mon YYYY'))
-             RETURNING id, first_name, last_name, name, email, member_since, avatar_url`,
+            `INSERT INTO users (first_name, last_name, name, email, password, member_since, balance)
+             VALUES ($1, $2, $3, $4, $5, to_char(NOW(), 'Mon YYYY'), 0)
+             RETURNING id, first_name, last_name, name, email, balance, member_since, avatar_url`,
             [firstName, lastName, `${firstName} ${lastName}`, email, password]
         );
         res.json({ user: result.rows[0] });
@@ -29,7 +29,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
         const result = await pool.query(
-            `SELECT id, first_name, last_name, name, email, member_since, avatar_url
+            `SELECT id, first_name, last_name, name, email, balance, member_since, avatar_url
              FROM users WHERE email = $1 AND password = $2`,
             [email, password]
         );
@@ -66,6 +66,23 @@ router.put('/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al actualizar perfil' });
+    }
+});
+
+router.put('/:id/balance', async (req, res) => {
+    const { newBalance } = req.body;
+    try {
+        const result = await pool.query(
+            `UPDATE users
+             SET balance = $1
+             WHERE id = $2
+             RETURNING id, first_name, last_name, name, email, balance, member_since, avatar_url`,
+            [newBalance, req.params.id]
+        );
+        res.json({ user: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al actualizar QuorumCoins' });
     }
 });
 
