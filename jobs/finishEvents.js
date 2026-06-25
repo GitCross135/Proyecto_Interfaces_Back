@@ -9,7 +9,7 @@ export function startFinishEventsJob() {
                 `UPDATE events
                  SET status = 'finished'
                  WHERE status = 'active'
-                   AND (date || ' ' || time)::timestamp < NOW() - INTERVAL '24 hours'
+                   AND (raw_date || ' ' || time)::timestamp < NOW() - INTERVAL '24 hours'
                  RETURNING code, title`
             );
             if (result.rows.length > 0) {
